@@ -34,7 +34,7 @@ export function VideoCard({
 
   return (
     <article>
-      <button type="button" onClick={() => onSelect(video)} className="block w-full text-left" aria-label={video.title}>
+      <button type="button" onClick={() => onSelect(video)} className="group block w-full text-left" aria-label={video.title}>
         <span className="relative block aspect-video overflow-hidden rounded-xl bg-[#202020]">
           <img
             src={thumbnailUrl}
@@ -48,6 +48,7 @@ export function VideoCard({
               image.src = `https://i.ytimg.com/vi/${video.vid}/hqdefault.jpg`;
             }}
           />
+          <PlayOverlay />
           {watched && <span className="absolute inset-x-0 bottom-0 h-1 bg-[#ff0000]" />}
         </span>
       </button>
@@ -104,6 +105,23 @@ export function VideoCard({
         </div>
       </div>
     </article>
+  );
+}
+
+export function PlayOverlay({ size = 'md' }: { size?: 'sm' | 'md' }) {
+  const button = size === 'sm' ? 'h-8 w-8' : 'h-[22%] min-h-11 max-h-16 aspect-square';
+  const icon = size === 'sm' ? 'h-4 w-4' : 'h-[46%] w-[46%]';
+
+  return (
+    <span className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden>
+      <span
+        className={`grid place-items-center rounded-full bg-black/75 shadow-[0_2px_12px_rgba(0,0,0,0.55)] ring-2 ring-white/90 transition duration-150 group-hover:scale-110 group-hover:bg-black/90 ${button}`}
+      >
+        <svg viewBox="0 0 24 24" className={`ml-0.5 fill-white ${icon}`}>
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </span>
+    </span>
   );
 }
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { CatalogVideo, Playlist, VideoDetails } from '../types';
 import { categoryName } from '../data/load';
 import { addWatchedVideo, isSaved, toggleSavedVideo } from '../utils/storage';
-import { ChannelAvatar } from './VideoCard';
+import { ChannelAvatar, PlayOverlay } from './VideoCard';
 import { PlaylistActions } from './PlaylistActions';
 
 interface VideoPlayerProps {
@@ -192,7 +192,7 @@ function SuggestionList({ videos, onSelect }: { videos: CatalogVideo[]; onSelect
           key={item.vid}
           type="button"
           onClick={() => onSelect(item)}
-          className="flex w-full gap-2 rounded-lg p-1 text-left hover:bg-white/[0.06]"
+          className="group flex w-full gap-2 rounded-lg p-1 text-left hover:bg-white/[0.06]"
         >
           <span className="relative aspect-video w-[168px] shrink-0 overflow-hidden rounded-lg bg-[#202020]">
             <img
@@ -201,6 +201,7 @@ function SuggestionList({ videos, onSelect }: { videos: CatalogVideo[]; onSelect
               className="h-full w-full object-cover"
               loading="lazy"
             />
+            <PlayOverlay size="sm" />
           </span>
           <span className="min-w-0 py-0.5">
             <span className="line-clamp-2 text-[14px] leading-5 font-medium text-[#f1f1f1]">{item.title}</span>
