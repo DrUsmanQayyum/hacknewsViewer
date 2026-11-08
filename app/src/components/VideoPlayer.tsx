@@ -1,192 +1,164 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { Video } from '../types';
 import { addWatchedVideo, isSaved, toggleSavedVideo } from '../utils/storage';
-import { useState } from 'react';
+import { ChannelAvatar } from './VideoCard';
 
 interface VideoPlayerProps {
   video: Video;
-  onClose: () => void;
+  related: Video[];
+  onBack: () => void;
+  onSelect: (video: Video) => void;
+  onLibraryChange: () => void;
 }
 
-export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
-  const [saved, setSaved] = useState(isSaved(video.vid));
+export function VideoPlayer({ video, related, onBack, onSelect, onLibraryChange }: VideoPlayerProps) {
+  const [saved, setSaved] = useState(() => isSaved(video.vid));
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     addWatchedVideo(video.vid);
-    
-    // Prevent body scroll when player is open
-    document.body.style.overflow = 'hidden';
-    
+    setSaved(isSaved(video.vid));
+    setExpanded(false);
+    onLibraryChange();
+    document.title = `${video.title} - HN Videos`;
+
     return () => {
-      document.body.style.overflow = 'unset';
+      document.title = 'HN Videos';
     };
-  }, [video.vid]);
+  }, [video.vid, video.title, onLibraryChange]);
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onBack();
     };
-    
+
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
+  }, [onBack]);
 
   const handleSaveToggle = () => {
-    const newSaved = toggleSavedVideo(video.vid);
-    setSaved(newSaved);
+    setSaved(toggleSavedVideo(video.vid));
+    onLibraryChange();
   };
 
-  const embedUrl = `https://www.youtube-nocookie.com/embed/${video.vid}?autoplay=1`;
+  const embedUrl = `https://www.youtube-nocookie.com/embed/${video.vid}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+  const discussionUrl = video.quote?.hn_comment_id
+    ? `https://news.ycombinator.com/item?id=${video.quote.hn_comment_id}`
+    : `https://hn.algolia.com/?query=${encodeURIComponent(video.vid)}`;
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/90 z-50 overflow-y-auto"
-      onClick={onClose}
-    >
-      <div className="min-h-screen p-4 flex flex-col">
-        <div 
-          className="max-w-7xl mx-auto w-full bg-gray-900 rounded-lg overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between p-4 border-b border-gray-800">
-            <h2 className="text-xl font-semibold text-white truncate flex-1">
-              {video.title}
-            </h2>
-            <div className="flex items-center gap-2 ml-4">
-              <button
-                onClick={handleSaveToggle}
-                className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-                aria-label={saved ? 'Remove from saved' : 'Save for later'}
-              >
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill={saved ? 'currentColor' : 'none'}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                  />
-                </svg>
-              </button>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-                aria-label="Close player"
-              >
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+    <div className="mx-auto flex w-full max-w-[1750px] flex-col gap-6 px-4 pt-6 pb-10 xl:flex-row xl:px-6">
+      <div className="min-w-0 flex-1">
+        <div className="relative aspect-video overflow-hidden rounded-xl bg-black">
+          <iframe
+            key={video.vid}
+            src={embedUrl}
+            className="absolute inset-0 h-full w-full border-0"
+            title={video.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </div>
+
+        <h1 className="mt-3 text-[20px] leading-7 font-bold text-[#f1f1f1]">{video.title}</h1>
+
+        <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <ChannelAvatar name={video.channel} />
+            <div className="min-w-0">
+              <p className="truncate text-[16px] font-medium text-[#f1f1f1]">{video.channel || 'Unknown channel'}</p>
+              <p className="truncate text-[12px] text-[#aaaaaa]">{video.primary_topic}</p>
             </div>
           </div>
 
-          <div className="aspect-video bg-black">
-            <iframe
-              src={embedUrl}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              title={video.title}
-            />
-          </div>
-
-          <div className="p-6 space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">About</h3>
-              <p className="text-gray-300 mb-4">{video.summary}</p>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="px-3 py-1 text-sm bg-blue-500/20 text-blue-300 rounded">
-                  {video.content_type}
-                </span>
-                <span className="px-3 py-1 text-sm bg-purple-500/20 text-purple-300 rounded">
-                  {video.level}
-                </span>
-                <span className="px-3 py-1 text-sm bg-green-500/20 text-green-300 rounded">
-                  Score: {video.score}
-                </span>
-              </div>
-
-              <div className="text-sm text-gray-400 space-y-1">
-                <p><strong className="text-gray-300">Channel:</strong> {video.channel}</p>
-                <p><strong className="text-gray-300">Topic:</strong> {video.primary_topic}</p>
-                <p>
-                  <strong className="text-gray-300">Categories:</strong>{' '}
-                  {video.categories.map(c => c.name).join(', ')}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">Why HN Recommends This</h3>
-              <p className="text-gray-300">{video.why_hn}</p>
-            </div>
-
-            {video.quote && (
-              <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-blue-500">
-                <p className="text-gray-300 italic mb-2">"{video.quote.text}"</p>
-                <a
-                  href={`https://news.ycombinator.com/item?id=${video.quote.hn_comment_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-400 hover:text-blue-300"
-                >
-                  View HN comment from {video.quote.year} →
-                </a>
-              </div>
-            )}
-
-            <div className="bg-gray-800 p-4 rounded-lg">
-              <h4 className="text-sm font-semibold text-white mb-2">HN Discussion Stats</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-400">Mentions</p>
-                  <p className="text-white font-semibold">{video.hn.mentions}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Recommenders</p>
-                  <p className="text-white font-semibold">{video.hn.recommenders}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Active Months</p>
-                  <p className="text-white font-semibold">{video.hn.rec_months}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">Period</p>
-                  <p className="text-white font-semibold">
-                    {video.hn.first_year}–{video.hn.last_year}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <a
-                href={video.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-center font-medium transition-colors"
-              >
-                Watch on YouTube
-              </a>
-              <a
-                href={`https://hn.algolia.com/?query=${encodeURIComponent(video.vid)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-center font-medium transition-colors"
-              >
-                View HN Discussions
-              </a>
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSaveToggle}
+              aria-pressed={saved}
+              className={`inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium ${saved ? 'bg-[#f1f1f1] text-black' : 'bg-[#272727] text-[#f1f1f1] hover:bg-[#3f3f3f]'}`}
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinejoin="round" d="M6 4.5h12a1 1 0 0 1 1 1V20l-7-3.5L5 20V5.5a1 1 0 0 1 1-1z" />
+              </svg>
+              {saved ? 'Saved' : 'Save'}
+            </button>
+            <a
+              href={video.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-9 items-center rounded-full bg-[#272727] px-4 text-sm font-medium text-[#f1f1f1] hover:bg-[#3f3f3f]"
+            >
+              YouTube
+            </a>
+            <a
+              href={discussionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-9 items-center rounded-full bg-[#272727] px-4 text-sm font-medium text-[#f1f1f1] hover:bg-[#3f3f3f]"
+            >
+              HN thread
+            </a>
           </div>
         </div>
+
+        <div className="mt-4 rounded-xl bg-[#272727] px-3 py-3 text-sm">
+          <p className="font-medium text-[#f1f1f1]">
+            {video.hn.recommenders} recommenders · {video.hn.mentions} mentions · {video.hn.first_year}–{video.hn.last_year}
+          </p>
+          <p className={`mt-1 whitespace-pre-wrap text-[#f1f1f1] ${expanded ? '' : 'line-clamp-2'}`}>{video.summary}</p>
+          {expanded && (
+            <div className="mt-3 space-y-3">
+              <p>{video.why_hn}</p>
+              {video.quote?.text && (
+                <blockquote className="border-l-2 border-[#717171] pl-3 text-[#f1f1f1]">
+                  <p className="whitespace-pre-wrap">“{video.quote.text}”</p>
+                  <a href={discussionUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-[#3ea6ff]">
+                    Comment from {video.quote.year}
+                  </a>
+                </blockquote>
+              )}
+              <p className="text-[#aaaaaa]">
+                {[video.content_type, video.level, ...video.categories.map((category) => category.name)].filter(Boolean).join(' · ')}
+              </p>
+            </div>
+          )}
+          <button type="button" onClick={() => setExpanded((open) => !open)} className="mt-2 text-sm font-medium">
+            {expanded ? '...less' : '...more'}
+          </button>
+        </div>
       </div>
+
+      {related.length > 0 && (
+        <aside className="xl:w-[402px] xl:shrink-0">
+          <h2 className="mb-2 text-[16px] font-medium">Up next</h2>
+          <div className="flex flex-col gap-2">
+            {related.map((item) => (
+              <button
+                key={item.vid}
+                type="button"
+                onClick={() => onSelect(item)}
+                className="flex w-full gap-2 rounded-lg p-1 text-left hover:bg-white/[0.06]"
+              >
+                <span className="relative aspect-video w-[168px] shrink-0 overflow-hidden rounded-lg bg-[#202020]">
+                  <img
+                    src={`https://i.ytimg.com/vi/${item.vid}/mqdefault.jpg`}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </span>
+                <span className="min-w-0 py-0.5">
+                  <span className="line-clamp-2 text-[14px] leading-5 font-medium text-[#f1f1f1]">{item.title}</span>
+                  <span className="mt-1 block truncate text-[12px] text-[#aaaaaa]">{item.channel}</span>
+                  <span className="block truncate text-[12px] text-[#aaaaaa]">{item.hn.recommenders} recommendations</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

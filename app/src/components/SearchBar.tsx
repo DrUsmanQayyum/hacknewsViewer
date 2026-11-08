@@ -1,52 +1,65 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
-  resultsCount: number;
 }
 
-export function SearchBar({ value, onChange, resultsCount }: SearchBarProps) {
+export function SearchBar({ value, onChange }: SearchBarProps) {
   const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       onChange(localValue);
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(timer);
   }, [localValue, onChange]);
 
   return (
-    <div className="w-full">
-      <div className="relative">
+    <form
+      className="flex w-full items-center"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onChange(localValue);
+      }}
+    >
+      <div className="relative min-w-0 flex-1">
         <input
           type="text"
-          placeholder="Search videos by title, topic, channel..."
+          placeholder="Search"
           value={localValue}
-          onChange={(e) => setLocalValue(e.target.value)}
-          className="w-full px-4 py-3 pl-10 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          onChange={(event) => setLocalValue(event.target.value)}
+          className="h-10 w-full rounded-l-full border border-[#303030] bg-[#121212] pl-4 pr-10 text-sm text-[#f1f1f1] placeholder:text-[#888] focus:border-[#1c62b9] focus:outline-none"
           aria-label="Search videos"
         />
-        <svg
-          className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
+        {localValue && (
+          <button
+            type="button"
+            onClick={() => setLocalValue('')}
+            className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-[#f1f1f1] hover:bg-white/10"
+            aria-label="Clear search"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        )}
       </div>
-      {value && (
-        <p className="mt-2 text-sm text-gray-400">
-          Found {resultsCount} video{resultsCount !== 1 ? 's' : ''}
-        </p>
-      )}
-    </div>
+      <button
+        type="submit"
+        className="grid h-10 w-16 shrink-0 place-items-center rounded-r-full border border-l-0 border-[#303030] bg-[#222] hover:bg-[#2e2e2e]"
+        aria-label="Search"
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#f1f1f1]" fill="none" stroke="currentColor" strokeWidth={2}>
+          <circle cx="11" cy="11" r="7" />
+          <path strokeLinecap="round" d="M20 20l-3.5-3.5" />
+        </svg>
+      </button>
+    </form>
   );
 }

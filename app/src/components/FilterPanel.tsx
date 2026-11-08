@@ -7,48 +7,62 @@ interface FilterPanelProps {
   taxonomy: Taxonomy;
 }
 
+const fieldClass = 'w-full rounded-lg border border-[#303030] bg-[#121212] px-3 py-2 text-sm text-[#f1f1f1] focus:border-[#1c62b9] focus:outline-none';
+
 export function FilterPanel({ filters, onChange, taxonomy }: FilterPanelProps) {
   const updateFilter = (key: keyof Filters, value: string) => {
     const newFilters = { ...filters, [key]: value };
-    // Reset category when area changes
     if (key === 'area') {
       newFilters.category = 'all';
     }
     onChange(newFilters);
   };
 
-  const selectedArea = taxonomy.areas.find(a => a.id === filters.area);
+  const selectedArea = taxonomy.areas.find((area) => area.id === filters.area);
   const categories = selectedArea?.categories || [];
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 space-y-4">
-      <h2 className="text-lg font-semibold text-white mb-4">Filters</h2>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Sort By
-        </label>
-        <select
-          value={filters.sortBy}
-          onChange={(e) => updateFilter('sortBy', e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <div className="max-w-sm space-y-4 rounded-xl bg-[#212121] p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-medium text-[#f1f1f1]">Filters</h2>
+        <button
+          type="button"
+          onClick={() => onChange({
+            ...filters,
+            contentType: 'all',
+            level: 'all',
+            area: 'all',
+            category: 'all',
+            shelfLife: 'all',
+            sortBy: 'score',
+          })}
+          className="text-sm font-medium text-[#3ea6ff]"
         >
-          <option value="score">Highest Rated</option>
-          <option value="recent">Most Recent</option>
-          <option value="oldest">Oldest First</option>
-        </select>
+          Reset
+        </button>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Content Type
-        </label>
+      <label className="block text-sm text-[#aaaaaa]">
+        Sort by
+        <select
+          value={filters.sortBy}
+          onChange={(event) => updateFilter('sortBy', event.target.value)}
+          className={`${fieldClass} mt-1`}
+        >
+          <option value="score">Highest rated</option>
+          <option value="recent">Most recent</option>
+          <option value="oldest">Oldest</option>
+        </select>
+      </label>
+
+      <label className="block text-sm text-[#aaaaaa]">
+        Content type
         <select
           value={filters.contentType}
-          onChange={(e) => updateFilter('contentType', e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(event) => updateFilter('contentType', event.target.value)}
+          className={`${fieldClass} mt-1`}
         >
-          <option value="all">All Types</option>
+          <option value="all">All types</option>
           <option value="talk">Talk</option>
           <option value="course">Course</option>
           <option value="tutorial">Tutorial</option>
@@ -56,72 +70,64 @@ export function FilterPanel({ filters, onChange, taxonomy }: FilterPanelProps) {
           <option value="interview">Interview</option>
           <option value="documentary">Documentary</option>
         </select>
-      </div>
+      </label>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Level
-        </label>
+      <label className="block text-sm text-[#aaaaaa]">
+        Level
         <select
           value={filters.level}
-          onChange={(e) => updateFilter('level', e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(event) => updateFilter('level', event.target.value)}
+          className={`${fieldClass} mt-1`}
         >
-          <option value="all">All Levels</option>
+          <option value="all">All levels</option>
           <option value="intro">Beginner</option>
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
         </select>
-      </div>
+      </label>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Topic Area
-        </label>
+      <label className="block text-sm text-[#aaaaaa]">
+        Topic area
         <select
           value={filters.area}
-          onChange={(e) => updateFilter('area', e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(event) => updateFilter('area', event.target.value)}
+          className={`${fieldClass} mt-1`}
         >
-          <option value="all">All Areas</option>
-          {taxonomy.areas.map(area => (
+          <option value="all">All areas</option>
+          {taxonomy.areas.map((area) => (
             <option key={area.id} value={area.id}>{area.name}</option>
           ))}
         </select>
-      </div>
+      </label>
 
       {categories.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Category
-          </label>
+        <label className="block text-sm text-[#aaaaaa]">
+          Category
           <select
             value={filters.category}
-            onChange={(e) => updateFilter('category', e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(event) => updateFilter('category', event.target.value)}
+            className={`${fieldClass} mt-1`}
           >
-            <option value="all">All Categories</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            <option value="all">All categories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>{category.name}</option>
             ))}
           </select>
-        </div>
+        </label>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Shelf Life
-        </label>
+      <label className="block text-sm text-[#aaaaaa]">
+        Shelf life
         <select
           value={filters.shelfLife}
-          onChange={(e) => updateFilter('shelfLife', e.target.value)}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(event) => updateFilter('shelfLife', event.target.value)}
+          className={`${fieldClass} mt-1`}
         >
-          <option value="all">All Videos</option>
-          <option value="evergreen">Evergreen Only</option>
-          <option value="news">News/Timely</option>
+          <option value="all">All videos</option>
+          <option value="evergreen">Evergreen</option>
+          <option value="news">News</option>
         </select>
-      </div>
+      </label>
     </div>
   );
 }
