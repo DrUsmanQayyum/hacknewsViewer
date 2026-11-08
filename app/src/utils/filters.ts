@@ -1,4 +1,4 @@
-import type { Video } from '../types';
+import type { CatalogVideo } from '../types';
 
 export interface Filters {
   search: string;
@@ -10,19 +10,22 @@ export interface Filters {
   sortBy: 'score' | 'recent' | 'oldest';
 }
 
-export function filterVideos(videos: Video[], filters: Filters): Video[] {
+export function filterVideos(
+  videos: CatalogVideo[],
+  filters: Filters,
+  summaries?: ReadonlyMap<string, string>,
+): CatalogVideo[] {
   let filtered = videos;
 
-  // Search filter
   if (filters.search) {
     const search = filters.search.toLowerCase();
-    filtered = filtered.filter(v => 
-      v.title.toLowerCase().includes(search) ||
-      v.summary.toLowerCase().includes(search) ||
-      v.channel.toLowerCase().includes(search) ||
-      v.primary_topic.toLowerCase().includes(search) ||
-      v.tags.some(t => t.toLowerCase().includes(search))
-    );
+    filtered = filtered.filter((video) => (
+      video.title.toLowerCase().includes(search) ||
+      (summaries?.get(video.vid) ?? '').toLowerCase().includes(search) ||
+      video.channel.toLowerCase().includes(search) ||
+      video.primary_topic.toLowerCase().includes(search) ||
+      video.tags.some((tag) => tag.toLowerCase().includes(search))
+    ));
   }
 
   // Content type filter
@@ -68,6 +71,10 @@ export function filterVideos(videos: Video[], filters: Filters): Video[] {
     case 'oldest':
       sorted.sort((a, b) => a.hn.first_year - b.hn.first_year);
       break;
+    default: {
+      const unknownSort: never = filters.sortBy;
+      throw new Error(`Unknown sort: ${unknownSort}`);
+    }
   }
 
   return sorted;
