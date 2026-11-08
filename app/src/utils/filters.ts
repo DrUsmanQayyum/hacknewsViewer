@@ -1,4 +1,5 @@
 import type { CatalogVideo } from '../types';
+import { compareForFeed } from './ranking';
 
 export interface Filters {
   search: string;
@@ -7,13 +8,14 @@ export interface Filters {
   area: string;
   category: string;
   shelfLife: string;
-  sortBy: 'score' | 'recent' | 'oldest';
+  sortBy: 'featured' | 'score' | 'recent' | 'oldest';
 }
 
 export function filterVideos(
   videos: CatalogVideo[],
   filters: Filters,
   summaries?: ReadonlyMap<string, string>,
+  options?: { preserveOrder?: boolean },
 ): CatalogVideo[] {
   let filtered = videos;
 
@@ -59,14 +61,18 @@ export function filterVideos(
     filtered = filtered.filter(v => v.shelf_life === 'news');
   }
 
-  // Sort
+  if (options?.preserveOrder) return filtered;
+
   const sorted = [...filtered];
   switch (filters.sortBy) {
+    case 'featured':
+      sorted.sort(compareForFeed);
+      break;
     case 'score':
-      sorted.sort((a, b) => b.score - a.score);
+      sorted.sort((a, b) => b.score - a.score || b.hn.recommenders - a.hn.recommenders);
       break;
     case 'recent':
-      sorted.sort((a, b) => b.hn.last_year - a.hn.last_year);
+      sorted.sort((a, b) => b.hn.last_year - a.hn.last_year || b.hn.recommenders - a.hn.recommenders);
       break;
     case 'oldest':
       sorted.sort((a, b) => a.hn.first_year - b.hn.first_year);

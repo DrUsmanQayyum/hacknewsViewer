@@ -55,7 +55,7 @@ const defaultFilters: Filters = {
   area: 'all',
   category: 'all',
   shelfLife: 'all',
-  sortBy: 'score',
+  sortBy: 'featured',
 };
 
 describe('filterVideos', () => {
@@ -104,11 +104,29 @@ describe('filterVideos', () => {
     expect(result[0].vid).toBe('vid3');
   });
 
-  it('should sort by score (default)', () => {
+  it('should sort latest AI videos with the most recommendations first', () => {
     const result = filterVideos(mockVideos, defaultFilters);
-    expect(result[0].vid).toBe('vid2');
-    expect(result[1].vid).toBe('vid1');
-    expect(result[2].vid).toBe('vid3');
+    expect(result.map((video) => video.vid)).toEqual(['vid2', 'vid3', 'vid1']);
+  });
+
+  it('should place an older popular video after a newer AI video', () => {
+    const older = {
+      ...mockVideos[1],
+      vid: 'old',
+      title: 'Cooking pasta',
+      primary_topic: 'food',
+      tags: ['kitchen'],
+      categories: [{ id: 'cooking', area: 'life' }],
+      hn: { ...mockVideos[1].hn, recommenders: 40, last_year: 2020 },
+    };
+    const result = filterVideos([...mockVideos, older], defaultFilters);
+    expect(result[result.length - 1].vid).toBe('old');
+    expect(result[0].hn.last_year).toBeGreaterThan(older.hn.last_year);
+  });
+
+  it('should sort by score', () => {
+    const result = filterVideos(mockVideos, { ...defaultFilters, sortBy: 'score' });
+    expect(result.map((video) => video.vid)).toEqual(['vid2', 'vid1', 'vid3']);
   });
 
   it('should sort by recent', () => {

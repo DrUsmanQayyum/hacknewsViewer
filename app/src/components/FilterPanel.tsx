@@ -34,7 +34,7 @@ export function FilterPanel({ filters, onChange, taxonomy }: FilterPanelProps) {
             area: 'all',
             category: 'all',
             shelfLife: 'all',
-            sortBy: 'score',
+            sortBy: 'featured',
           })}
           className="text-sm font-medium text-[#3ea6ff]"
         >
@@ -49,6 +49,7 @@ export function FilterPanel({ filters, onChange, taxonomy }: FilterPanelProps) {
           onChange={(event) => updateFilter('sortBy', event.target.value)}
           className={`${fieldClass} mt-1`}
         >
+          <option value="featured">Latest and most viewed</option>
           <option value="score">Highest rated</option>
           <option value="recent">Most recent</option>
           <option value="oldest">Oldest</option>

@@ -29,7 +29,7 @@ const defaultFilters: Filters = {
   area: 'all',
   category: 'all',
   shelfLife: 'all',
-  sortBy: 'score',
+  sortBy: 'featured',
 };
 
 const contentTypes = [
@@ -112,7 +112,9 @@ function App() {
         .map((entry) => catalogById.get(entry.vid))
         .filter((video): video is CatalogVideo => video !== undefined);
     }
-    return filterVideos(baseVideos, filters, summaries);
+    return filterVideos(baseVideos, filters, summaries, {
+      preserveOrder: route.page !== 'browse' && filters.sortBy === 'featured',
+    });
   }, [filters, route, libraryTick, summaries]);
 
   const openPlaylist = route.page === 'playlist'
@@ -172,7 +174,7 @@ function App() {
     || filters.area !== 'all'
     || filters.category !== 'all'
     || filters.shelfLife !== 'all'
-    || filters.sortBy !== 'score';
+    || filters.sortBy !== 'featured';
 
   const listPage = route.page === 'browse' || route.page === 'history' || route.page === 'saved';
 
