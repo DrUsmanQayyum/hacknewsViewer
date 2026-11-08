@@ -74,3 +74,4 @@ coverage/
 # Other
 .cache/
 tempCodeRunnerFile.py
+.cursor/hooks/state/continual-learning.json
