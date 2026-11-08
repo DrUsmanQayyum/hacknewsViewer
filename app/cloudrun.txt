@@ -1,0 +1,7 @@
+# gcloud auth login
+# Deploy
+gcloud run deploy hacknews-ai-viewer \
+  --source . \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated
