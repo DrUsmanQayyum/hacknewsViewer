@@ -192,13 +192,13 @@ function App() {
     <div className="min-h-screen bg-[#0f0f0f] text-[#f1f1f1]">
       <header className="sticky top-0 z-50 bg-[#0f0f0f]">
         <div className="flex h-14 items-center gap-3 px-4">
-          <button type="button" onClick={() => go({ page: 'browse' })} className="flex shrink-0 items-center gap-2" aria-label="HN Videos home">
+          <button type="button" onClick={() => go({ page: 'browse' })} className="flex shrink-0 items-center gap-2" aria-label="HN AI videos home">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#ff0000]">
               <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4 fill-white">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </span>
-            <span className="hidden text-lg font-medium tracking-tight sm:block">HN Videos</span>
+            <span className="hidden text-lg font-medium tracking-tight sm:block">HN AI videos</span>
           </button>
 
           <div className="mx-auto hidden w-full max-w-[640px] sm:block">

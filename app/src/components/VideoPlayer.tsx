@@ -36,10 +36,10 @@ export function VideoPlayer({
     setExpanded(false);
     setPlaylistMenu(false);
     onLibraryChange();
-    document.title = `${video.title} - HN Videos`;
+    document.title = `${video.title} - HN AI videos`;
 
     return () => {
-      document.title = 'HN Videos';
+      document.title = 'HN AI videos';
     };
   }, [video.vid, video.title, onLibraryChange]);
 

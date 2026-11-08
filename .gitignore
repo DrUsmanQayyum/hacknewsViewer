@@ -75,3 +75,4 @@ coverage/
 .cache/
 tempCodeRunnerFile.py
 .cursor/hooks/state/continual-learning.json
+.cursor/hooks/state/continual-learning.json
