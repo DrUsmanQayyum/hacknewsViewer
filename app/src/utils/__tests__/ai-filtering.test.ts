@@ -20,8 +20,6 @@ describe('AI/ML filtering regression tests', () => {
   });
 
   it('should not include general automotive content without AI', () => {
-    const titles = videos.map(v => v.title.toLowerCase());
-    
     // "Tesla Unveils" without AI/ML context
     const teslaNews = videos.filter(v => 
       v.title.toLowerCase().includes('tesla unveils') &&

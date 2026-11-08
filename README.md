@@ -6,7 +6,7 @@ A polished, responsive web application for discovering and watching AI-related v
 
 ## Overview
 
-This application provides a streamlined interface to explore **3,837 AI-related videos** selected from HackerTube's dataset of 6,454 HN-recommended videos. Videos are filtered to include only content related to machine learning, deep learning, NLP, computer vision, robotics, and AI research.
+This application provides a streamlined interface to explore **345 AI/ML-focused videos** selected from HackerTube's dataset of 6,454 HN-recommended videos. Videos are filtered to include only content with explicit AI/ML substance: machine learning, deep learning, LLMs, computer vision, AI safety, and AI-driven robotics.
 
 ### Features
 
@@ -55,11 +55,15 @@ This project uses data from:
 
 ### Data Processing
 
-The application filters the full HackerTube dataset to include only AI-related content:
+The application filters the full HackerTube dataset to include only AI/ML-focused content:
 
 - **Total videos in source dataset:** 6,454
-- **AI-related videos in this app:** 3,837 (59.5%)
-- **Filtering criteria:** Videos tagged or categorized as ML, DL, NLP, CV, robotics, AI research, or containing AI-related keywords in title/summary
+- **AI/ML videos in this app:** 345 (5.4%)
+- **Filtering criteria:** 
+  - Core AI categories: machine-learning, llms-generative-ai, computer-vision-speech, ai-safety-impact (always included)
+  - Adjacent categories (robotics, self-driving, data-science, data-viz): only with explicit AI/ML keywords
+  - Excludes: general visualization, automotive news, data science without ML context
+- **Verification:** Random 50-sample shows 90% with explicit AI/ML keywords, 10% in core AI categories without specific keywords but clearly AI-focused (e.g., "automation and unemployment" in AI safety category)
 
 Data is processed at build time and included in the application bundle. No external API calls are required for basic functionality.
 
