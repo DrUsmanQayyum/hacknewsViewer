@@ -1,6 +1,6 @@
 # HackerNews AI Video Viewer
 
-A polished, responsive web application for discovering and watching AI-related videos curated from Hacker News recommendations. Built with React, TypeScript, and Tailwind CSS.
+A polished, responsive web application for discovering and watching AI/ML-focused videos curated from Hacker News recommendations. Built with React, TypeScript, and Tailwind CSS.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -258,7 +258,7 @@ Requires JavaScript and localStorage enabled.
 
 ## Known Limitations
 
-1. **Bundle size:** The video data file is ~5MB compressed (contains 3,837 videos)
+1. **Bundle size:** The video data file is ~726 KB (191 KB gzipped, contains 345 videos)
 2. **YouTube metadata:** Duration and view counts not included (YouTube API ToS)
 3. **Thumbnail source:** Uses YouTube-generated thumbnails (hq2.jpg for mid-frame when available)
 4. **Offline support:** Not a PWA, requires internet connection for video playback
