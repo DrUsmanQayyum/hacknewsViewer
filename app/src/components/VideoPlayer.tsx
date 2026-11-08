@@ -1,24 +1,40 @@
 import { useEffect, useState } from 'react';
-import type { Video } from '../types';
+import type { CatalogVideo, Playlist, VideoDetails } from '../types';
+import { categoryName } from '../data/load';
 import { addWatchedVideo, isSaved, toggleSavedVideo } from '../utils/storage';
 import { ChannelAvatar } from './VideoCard';
+import { PlaylistActions } from './PlaylistActions';
 
 interface VideoPlayerProps {
-  video: Video;
-  related: Video[];
+  video: CatalogVideo;
+  details: VideoDetails | null;
+  upNext: CatalogVideo[];
+  similar: CatalogVideo[];
+  playlists: Playlist[];
   onBack: () => void;
-  onSelect: (video: Video) => void;
+  onSelect: (video: CatalogVideo) => void;
   onLibraryChange: () => void;
 }
 
-export function VideoPlayer({ video, related, onBack, onSelect, onLibraryChange }: VideoPlayerProps) {
+export function VideoPlayer({
+  video,
+  details,
+  upNext,
+  similar,
+  playlists,
+  onBack,
+  onSelect,
+  onLibraryChange,
+}: VideoPlayerProps) {
   const [saved, setSaved] = useState(() => isSaved(video.vid));
   const [expanded, setExpanded] = useState(false);
+  const [playlistMenu, setPlaylistMenu] = useState(false);
 
   useEffect(() => {
     addWatchedVideo(video.vid);
     setSaved(isSaved(video.vid));
     setExpanded(false);
+    setPlaylistMenu(false);
     onLibraryChange();
     document.title = `${video.title} - HN Videos`;
 
@@ -31,7 +47,6 @@ export function VideoPlayer({ video, related, onBack, onSelect, onLibraryChange 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onBack();
     };
-
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onBack]);
@@ -42,9 +57,10 @@ export function VideoPlayer({ video, related, onBack, onSelect, onLibraryChange 
   };
 
   const embedUrl = `https://www.youtube-nocookie.com/embed/${video.vid}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
-  const discussionUrl = video.quote?.hn_comment_id
-    ? `https://news.ycombinator.com/item?id=${video.quote.hn_comment_id}`
+  const discussionUrl = details?.quote?.hn_comment_id
+    ? `https://news.ycombinator.com/item?id=${details.quote.hn_comment_id}`
     : `https://hn.algolia.com/?query=${encodeURIComponent(video.vid)}`;
+  const summary = details?.summary ?? '';
 
   return (
     <div className="mx-auto flex w-full max-w-[1750px] flex-col gap-6 px-4 pt-6 pb-10 xl:flex-row xl:px-6">
@@ -73,31 +89,49 @@ export function VideoPlayer({ video, related, onBack, onSelect, onLibraryChange 
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {upNext[0] && (
+              <button
+                type="button"
+                onClick={() => onSelect(upNext[0])}
+                className="inline-flex h-9 items-center rounded-full bg-white px-4 text-sm font-medium text-black"
+              >
+                Next
+              </button>
+            )}
             <button
               type="button"
               onClick={handleSaveToggle}
               aria-pressed={saved}
               className={`inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium ${saved ? 'bg-[#f1f1f1] text-black' : 'bg-[#272727] text-[#f1f1f1] hover:bg-[#3f3f3f]'}`}
             >
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinejoin="round" d="M6 4.5h12a1 1 0 0 1 1 1V20l-7-3.5L5 20V5.5a1 1 0 0 1 1-1z" />
-              </svg>
               {saved ? 'Saved' : 'Save'}
             </button>
-            <a
-              href={video.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 items-center rounded-full bg-[#272727] px-4 text-sm font-medium text-[#f1f1f1] hover:bg-[#3f3f3f]"
-            >
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setPlaylistMenu((open) => !open)}
+                className="inline-flex h-9 items-center rounded-full bg-[#272727] px-4 text-sm font-medium text-[#f1f1f1] hover:bg-[#3f3f3f]"
+                aria-expanded={playlistMenu}
+              >
+                Playlist
+              </button>
+              {playlistMenu && (
+                <div className="absolute right-0 z-20 mt-2 max-h-64 w-56 overflow-y-auto rounded-xl bg-[#282828] py-1.5 shadow-[0_4px_32px_rgba(0,0,0,0.6)]">
+                  <PlaylistActions
+                    vid={video.vid}
+                    playlists={playlists}
+                    onChanged={() => {
+                      setPlaylistMenu(false);
+                      onLibraryChange();
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            <a href={video.url} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center rounded-full bg-[#272727] px-4 text-sm font-medium text-[#f1f1f1] hover:bg-[#3f3f3f]">
               YouTube
             </a>
-            <a
-              href={discussionUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 items-center rounded-full bg-[#272727] px-4 text-sm font-medium text-[#f1f1f1] hover:bg-[#3f3f3f]"
-            >
+            <a href={discussionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center rounded-full bg-[#272727] px-4 text-sm font-medium text-[#f1f1f1] hover:bg-[#3f3f3f]">
               HN thread
             </a>
           </div>
@@ -107,20 +141,22 @@ export function VideoPlayer({ video, related, onBack, onSelect, onLibraryChange 
           <p className="font-medium text-[#f1f1f1]">
             {video.hn.recommenders} recommenders · {video.hn.mentions} mentions · {video.hn.first_year}–{video.hn.last_year}
           </p>
-          <p className={`mt-1 whitespace-pre-wrap text-[#f1f1f1] ${expanded ? '' : 'line-clamp-2'}`}>{video.summary}</p>
-          {expanded && (
+          <p className={`mt-1 whitespace-pre-wrap text-[#f1f1f1] ${expanded ? '' : 'line-clamp-2'}`}>
+            {details ? summary : 'Loading description…'}
+          </p>
+          {expanded && details && (
             <div className="mt-3 space-y-3">
-              <p>{video.why_hn}</p>
-              {video.quote?.text && (
+              <p>{details.why_hn}</p>
+              {details.quote?.text && (
                 <blockquote className="border-l-2 border-[#717171] pl-3 text-[#f1f1f1]">
-                  <p className="whitespace-pre-wrap">“{video.quote.text}”</p>
+                  <p className="whitespace-pre-wrap">“{details.quote.text}”</p>
                   <a href={discussionUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-[#3ea6ff]">
-                    Comment from {video.quote.year}
+                    Comment from {details.quote.year}
                   </a>
                 </blockquote>
               )}
               <p className="text-[#aaaaaa]">
-                {[video.content_type, video.level, ...video.categories.map((category) => category.name)].filter(Boolean).join(' · ')}
+                {[video.content_type, video.level, ...video.categories.map((category) => categoryName(category.id))].filter(Boolean).join(' · ')}
               </p>
             </div>
           )}
@@ -130,35 +166,49 @@ export function VideoPlayer({ video, related, onBack, onSelect, onLibraryChange 
         </div>
       </div>
 
-      {related.length > 0 && (
-        <aside className="xl:w-[402px] xl:shrink-0">
-          <h2 className="mb-2 text-[16px] font-medium">Up next</h2>
-          <div className="flex flex-col gap-2">
-            {related.map((item) => (
-              <button
-                key={item.vid}
-                type="button"
-                onClick={() => onSelect(item)}
-                className="flex w-full gap-2 rounded-lg p-1 text-left hover:bg-white/[0.06]"
-              >
-                <span className="relative aspect-video w-[168px] shrink-0 overflow-hidden rounded-lg bg-[#202020]">
-                  <img
-                    src={`https://i.ytimg.com/vi/${item.vid}/mqdefault.jpg`}
-                    alt=""
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                </span>
-                <span className="min-w-0 py-0.5">
-                  <span className="line-clamp-2 text-[14px] leading-5 font-medium text-[#f1f1f1]">{item.title}</span>
-                  <span className="mt-1 block truncate text-[12px] text-[#aaaaaa]">{item.channel}</span>
-                  <span className="block truncate text-[12px] text-[#aaaaaa]">{item.hn.recommenders} recommendations</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </aside>
-      )}
+      <aside className="xl:w-[402px] xl:shrink-0">
+        {upNext.length > 0 && (
+          <>
+            <h2 className="mb-2 text-[16px] font-medium">Up next</h2>
+            <SuggestionList videos={upNext} onSelect={onSelect} />
+          </>
+        )}
+        {similar.length > 0 && (
+          <>
+            <h2 className="mt-6 mb-2 text-[16px] font-medium">More like this</h2>
+            <SuggestionList videos={similar} onSelect={onSelect} />
+          </>
+        )}
+      </aside>
+    </div>
+  );
+}
+
+function SuggestionList({ videos, onSelect }: { videos: CatalogVideo[]; onSelect: (video: CatalogVideo) => void }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {videos.map((item) => (
+        <button
+          key={item.vid}
+          type="button"
+          onClick={() => onSelect(item)}
+          className="flex w-full gap-2 rounded-lg p-1 text-left hover:bg-white/[0.06]"
+        >
+          <span className="relative aspect-video w-[168px] shrink-0 overflow-hidden rounded-lg bg-[#202020]">
+            <img
+              src={`https://i.ytimg.com/vi/${item.vid}/mqdefault.jpg`}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          </span>
+          <span className="min-w-0 py-0.5">
+            <span className="line-clamp-2 text-[14px] leading-5 font-medium text-[#f1f1f1]">{item.title}</span>
+            <span className="mt-1 block truncate text-[12px] text-[#aaaaaa]">{item.channel}</span>
+            <span className="block truncate text-[12px] text-[#aaaaaa]">{item.hn.recommenders} recommendations</span>
+          </span>
+        </button>
+      ))}
     </div>
   );
 }

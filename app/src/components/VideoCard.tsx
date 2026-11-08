@@ -1,17 +1,26 @@
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
-import type { Video } from '../types';
+import type { CatalogVideo, Playlist } from '../types';
 import { isSaved, toggleSavedVideo } from '../utils/storage';
+import { PlaylistActions } from './PlaylistActions';
 
 interface VideoCardProps {
-  video: Video;
+  video: CatalogVideo;
   watched?: boolean;
   priority?: boolean;
-  onSelect: (video: Video) => void;
+  playlists?: Playlist[];
+  onSelect: (video: CatalogVideo) => void;
   onLibraryChange?: () => void;
 }
 
-export function VideoCard({ video, watched = false, priority = false, onSelect, onLibraryChange }: VideoCardProps) {
+export function VideoCard({
+  video,
+  watched = false,
+  priority = false,
+  playlists = [],
+  onSelect,
+  onLibraryChange,
+}: VideoCardProps) {
   const [saved, setSaved] = useState(isSaved(video.vid));
   const [menuOpen, setMenuOpen] = useState(false);
   const thumbnailUrl = `https://i.ytimg.com/vi/${video.vid}/hq2.jpg`;
@@ -82,6 +91,14 @@ export function VideoCard({ video, watched = false, priority = false, onSelect, 
               >
                 {saved ? 'Remove from Saved' : 'Save to Saved'}
               </button>
+              <PlaylistActions
+                vid={video.vid}
+                playlists={playlists}
+                onChanged={() => {
+                  setMenuOpen(false);
+                  onLibraryChange?.();
+                }}
+              />
             </div>
           )}
         </div>
