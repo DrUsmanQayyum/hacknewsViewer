@@ -4,6 +4,8 @@ A polished, responsive web application for discovering and watching AI-related v
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+![HN Videos home](docs/screenshot.png)
+
 ## Overview
 
 This application provides a streamlined interface to explore **3,837 AI-related videos** selected from HackerTube's dataset of 6,454 HN-recommended videos. Videos are filtered to include only content related to machine learning, deep learning, NLP, computer vision, robotics, and AI research.
