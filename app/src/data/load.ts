@@ -1,8 +1,9 @@
 import type { CatalogVideo, Taxonomy, VideoDetails } from '../types';
+import { isAiVideo } from '../utils/ranking';
 import catalogData from './catalog.json';
 import taxonomyData from './taxonomy.json';
 
-export const catalog = catalogData as CatalogVideo[];
+export const catalog = (catalogData as CatalogVideo[]).filter(isAiVideo);
 export const taxonomy = taxonomyData as Taxonomy;
 
 export const catalogById = new Map(catalog.map((video) => [video.vid, video]));
